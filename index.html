@@ -90,11 +90,6 @@
                 </button>
             </div>
         </div>
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
-        <button onclick="logout()" class="btn-logout">
-            <i class="fas fa-sign-out-alt"></i> Sair do Sistema
-        </button>
-    </div>
     </div>
 
     <div class="panel-right">
@@ -116,6 +111,11 @@
                 <div class="toolbar">
                     <input type="text" id="search_p" placeholder="🔍 Buscar paciente por nome..." onkeyup="renderPacientes()" style="max-width:300px;">
                     <span style="font-size:11px; color:var(--text-muted)">Mostrando lista de pacientes ativos</span>
+                    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <button onclick="logout()" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+                    </button>
+                </div>
                 </div>
                 <div id="pacientes_lista" class="scroll-y"></div>
             </div>
@@ -299,4 +299,5 @@
 </body>
 
 </html>
+
 
