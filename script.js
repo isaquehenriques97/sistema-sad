@@ -13,6 +13,105 @@ let protocoloSelection = {};
 let targetPatientId = null;
 let retiradaTempData = null;
 
+/* ================= LOGIN ================= */
+// Verifica se o usuário já está logado ao carregar a página
+window.addEventListener('load', async () => {
+    // 1. Verifica se existe sessão ativa (Login normal)
+    const { data: { session } } = await _supabase.auth.getSession();
+
+    // 2. Verifica se a URL tem o hash de recuperação/convite (Vindo do E-mail)
+    const hash = window.location.hash;
+
+    // Se tiver "type=invite" ou "type=recovery" na URL, mostra tela de criar senha
+    if (hash && (hash.includes("type=invite") || hash.includes("type=recovery"))) {
+        console.log("Link de convite detectado!");
+        configurarTelaNovaSenha(); 
+    } 
+    // Se não for convite, mas tiver sessão, entra no app
+    else if (session) {
+        mostrarApp();
+    }
+    // Se não tiver nada, o usuário vê a tela de login normal (que já está no HTML)
+});
+
+async function handleAuth() {
+    const email = document.getElementById('auth-email').value;
+    const passwordField = document.getElementById('auth-password');
+    const msg = document.getElementById('auth-msg');
+
+    // Se o campo de senha está escondido, primeiro verificamos o e-mail
+    if (passwordField.classList.contains('hide')) {
+        // Aqui apenas mostramos o campo de senha para quem já tem conta
+        passwordField.classList.remove('hide');
+        document.getElementById('auth-subtitle').innerText = "Digite sua senha";
+        return;
+    }
+
+    const password = passwordField.value;
+    
+    // Tenta fazer login
+    const { error } = await _supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        msg.innerText = "Erro: " + error.message;
+    } else {
+        mostrarApp();
+    }
+}
+
+// Para quem clicou no e-mail para criar a senha
+function configurarTelaNovaSenha() {
+    // Esconde o login normal e adapta para "Criar Senha"
+    document.getElementById('auth-container').classList.remove('hide');
+    document.getElementById('app-content').classList.add('hide'); // Garante que o app tá escondido
+
+    document.getElementById('auth-title').innerText = "Bem-vindo ao S.A.D.";
+    document.getElementById('auth-subtitle').innerText = "Crie sua senha de acesso";
+    
+    // Esconde campo de e-mail (já sabemos quem é)
+    document.getElementById('auth-email').classList.add('hide');
+    
+    // Mostra campo de senha
+    const passInput = document.getElementById('auth-password');
+    passInput.classList.remove('hide');
+    passInput.placeholder = "Nova Senha";
+    
+    const btn = document.querySelector('#auth-container .btn');
+    btn.innerText = "Salvar e Entrar";
+    
+    // Muda a ação do botão para ATUALIZAR a senha
+    btn.onclick = async () => {
+        const newPassword = passInput.value;
+        if(newPassword.length < 6) {
+            alert("A senha precisa ter pelo menos 6 caracteres.");
+            return;
+        }
+
+        const { data, error } = await _supabase.auth.updateUser({ password: newPassword });
+        
+        if (error) {
+            alert("Erro: " + error.message);
+        } else {
+            alert("Senha cadastrada com sucesso!");
+            mostrarApp(); // Entra no sistema
+            // Limpa a URL para não ficar suja
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+    };
+}
+
+function mostrarApp() {
+    document.getElementById('auth-container').classList.add('hide');
+    document.getElementById('app-content').classList.remove('hide');
+    // Inicie suas funções de renderização aqui
+    carregarDadosDoBanco();
+}
+
+async function logout() {
+    await _supabase.auth.signOut();
+    window.location.reload();
+}
+
 /* ================= INICIALIZAÇÃO ================= */
 window.onload = async () => {
     const now = new Date();
@@ -793,102 +892,3 @@ async function excluirHistoricoGeral(pId) {
     }
 
 }
-
-// Verifica se o usuário já está logado ao carregar a página
-window.addEventListener('load', async () => {
-    // 1. Verifica se existe sessão ativa (Login normal)
-    const { data: { session } } = await _supabase.auth.getSession();
-
-    // 2. Verifica se a URL tem o hash de recuperação/convite (Vindo do E-mail)
-    const hash = window.location.hash;
-
-    // Se tiver "type=invite" ou "type=recovery" na URL, mostra tela de criar senha
-    if (hash && (hash.includes("type=invite") || hash.includes("type=recovery"))) {
-        console.log("Link de convite detectado!");
-        configurarTelaNovaSenha(); 
-    } 
-    // Se não for convite, mas tiver sessão, entra no app
-    else if (session) {
-        mostrarApp();
-    }
-    // Se não tiver nada, o usuário vê a tela de login normal (que já está no HTML)
-});
-
-async function handleAuth() {
-    const email = document.getElementById('auth-email').value;
-    const passwordField = document.getElementById('auth-password');
-    const msg = document.getElementById('auth-msg');
-
-    // Se o campo de senha está escondido, primeiro verificamos o e-mail
-    if (passwordField.classList.contains('hide')) {
-        // Aqui apenas mostramos o campo de senha para quem já tem conta
-        passwordField.classList.remove('hide');
-        document.getElementById('auth-subtitle').innerText = "Digite sua senha";
-        return;
-    }
-
-    const password = passwordField.value;
-    
-    // Tenta fazer login
-    const { error } = await _supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-        msg.innerText = "Erro: " + error.message;
-    } else {
-        mostrarApp();
-    }
-}
-
-// Para quem clicou no e-mail para criar a senha
-function configurarTelaNovaSenha() {
-    // Esconde o login normal e adapta para "Criar Senha"
-    document.getElementById('auth-container').classList.remove('hide');
-    document.getElementById('app-content').classList.add('hide'); // Garante que o app tá escondido
-
-    document.getElementById('auth-title').innerText = "Bem-vindo ao S.A.D.";
-    document.getElementById('auth-subtitle').innerText = "Crie sua senha de acesso";
-    
-    // Esconde campo de e-mail (já sabemos quem é)
-    document.getElementById('auth-email').classList.add('hide');
-    
-    // Mostra campo de senha
-    const passInput = document.getElementById('auth-password');
-    passInput.classList.remove('hide');
-    passInput.placeholder = "Nova Senha";
-    
-    const btn = document.querySelector('#auth-container .btn');
-    btn.innerText = "Salvar e Entrar";
-    
-    // Muda a ação do botão para ATUALIZAR a senha
-    btn.onclick = async () => {
-        const newPassword = passInput.value;
-        if(newPassword.length < 6) {
-            alert("A senha precisa ter pelo menos 6 caracteres.");
-            return;
-        }
-
-        const { data, error } = await _supabase.auth.updateUser({ password: newPassword });
-        
-        if (error) {
-            alert("Erro: " + error.message);
-        } else {
-            alert("Senha cadastrada com sucesso!");
-            mostrarApp(); // Entra no sistema
-            // Limpa a URL para não ficar suja
-            window.history.replaceState(null, null, window.location.pathname);
-        }
-    };
-}
-
-function mostrarApp() {
-    document.getElementById('auth-container').classList.add('hide');
-    document.getElementById('app-content').classList.remove('hide');
-    // Inicie suas funções de renderização aqui
-    carregarDadosDoBanco();
-}
-
-async function logout() {
-    await _supabase.auth.signOut();
-    window.location.reload();
-}
-
