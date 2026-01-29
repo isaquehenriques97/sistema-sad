@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediControl Pro 3.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+
+    <div class="panel-left">
+        <header style="padding: 1px; display: flex; align-items: center; justify-content: center;">
+            <img src="logo.png" alt="S.A.D. Logo" style="width: 100%; max-width: 320px; height: auto; object-fit: contain;">
+        </header>
+
+        <div class="scroll-content">
+            <div class="dash-widget">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="margin:0;"><i class="fas fa-chart-pie"></i> Resumo Mensal</h4>
+                    <input type="month" id="dash_mes" style="width: 130px; padding:5px; font-size:11px;" onchange="renderDashboard()">
+                </div>
+                
+                <div class="kpi-row compact">
+                    <div class="kpi-card">
+                        <div class="kpi-val" id="kpi_retiradas">0</div>
+                        <div class="kpi-label">Retiradas</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-val" id="kpi_itens_total">0</div>
+                        <div class="kpi-label">Itens Entregues</div>
+                    </div>
+                    <div class="kpi-card kpi-alert">
+                        <div class="kpi-val" id="kpi_alerta">0</div>
+                        <div class="kpi-label">Estoque Baixo</div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="card clean-card">
+                <h3><i class="fas fa-user-plus"></i> Novo Paciente</h3>
+                
+                <label class="field-label">Dados Pessoais</label>
+                <div class="input-group">
+                    <input type="text" id="p_nome" placeholder="Nome Completo" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="p_endereco" placeholder="Endereço">
+                </div>
+                <div class="input-group">
+                    <div style="flex:1">
+                        <input type="text" id="p_contato" placeholder="Tel/Contato">
+                    </div>
+                    <div style="flex:1">
+                        <input type="date" id="p_nasc">
+                    </div>
+                </div>
+
+                <label class="field-label" style="margin-top:10px;">Prescrição</label>
+                <div style="margin-bottom: 15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; align-items: center;">
+                        <small>Selecione os remédios:</small>
+                        <input type="text" id="protocolo_search" placeholder="🔍 Buscar..." style="width: 100px; padding: 4px;" onkeyup="renderProtocoloGrid()">
+                    </div>
+                    <div id="protocolo_grid" class="mini-grid"></div>
+                </div>
+
+                <button class="btn" style="width:100%" onclick="salvarPaciente()">
+                    <i class="fas fa-save"></i> CADASTRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-right">
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('tab-pacientes', event)">
+                <i class="fas fa-users"></i> Pacientes
+            </button>
+            <button class="nav-btn" onclick="switchTab('tab-farmacia', event)">
+                <i class="fas fa-pills"></i> Estoque / Farmácia
+            </button>
+            <button class="nav-btn" onclick="switchTab('tab-historico', event)">
+                <i class="fas fa-history"></i> Histórico Geral
+            </button>
+        </nav>
+
+        <div class="tab-content-container">
+            
+            <div id="tab-pacientes" class="tab-pane">
+                <div class="toolbar">
+                    <input type="text" id="search_p" placeholder="🔍 Buscar paciente por nome..." onkeyup="renderPacientes()" style="max-width:300px;">
+                    <span style="font-size:11px; color:var(--text-muted)">Mostrando lista de pacientes ativos</span>
+                </div>
+                <div id="pacientes_lista" class="scroll-y"></div>
+            </div>
+
+            <div id="tab-farmacia" class="tab-pane hide">
+                <div class="toolbar">
+                    <input type="text" id="farmacia_search" placeholder="🔍 Pesquisar medicamento..." onkeyup="renderFarmacia()">
+                    <select id="farmacia_filtro_tipo" onchange="renderFarmacia()">
+                        <option value="">Todos Tipos</option>
+                        <option value="PÍLULA">COMPRIMIDO</option>
+                        <option value="LÍQUIDO">Líquido</option>
+                        <option value="GEL">Gel</option>
+                        <option value="FRALDA">FRALDA</option>
+                    </select>
+                    <button class="btn btn-sm" onclick="abrirModalMed()"><i class="fas fa-plus"></i> Novo</button>
+                </div>
+                <div class="grid-container" id="farmacia_grid"></div>
+            </div>
+
+            <div id="tab-historico" class="tab-pane hide">
+                <div class="toolbar">
+                    <h3>Registro de Saídas</h3>
+                </div>
+                <div style="padding:20px; overflow-y:auto; height:100%;">
+                    <div class="toolbar">
+                    <input type="text" id="hist_nome" placeholder="Paciente" onchange="renderHistoricoGeral()">
+                    <input type="date" id="hist_ini">
+                    <input type="date" id="hist_fim">
+
+                    <label class="filter-pendencia">
+                        <input type="checkbox" id="hist_pendencia" onchange="renderHistoricoGeral()">
+                        <span>Apenas Pendências</span>
+                    </label>
+                    <button class="btn btn-sm" onclick="renderHistoricoGeral()">Filtrar</button>
+                    </div>
+                    <div class="toolbar">
+                    <table id="table_historico_geral">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Paciente</th>
+                                <th>Detalhes</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modal_edit_paciente" class="modal-overlay">
+    <div class="modal-content large-modal">
+        <h3>Editar Paciente</h3>
+        <h4 id="edit_paciente_nome"></h4>
+
+        <table>
+        <thead>
+            <tr>
+            <th>Remédio</th>
+            <th>Qtd</th>
+            <th></th>
+            </tr>
+        </thead>
+        <tbody id="edit_paciente_meds"></tbody>
+        </table>
+
+        <button class="btn btn-sm" style="width:100%; margin-top:10px; background: var(--bg-body); color: var(--primary);" onclick="abrirModalAddMed(currentEditPatient)">
+            <i class="fas fa-plus"></i> Adicionar Novo Remédio à Receita
+        </button>
+
+        <div style="margin-top:15px; display:flex; gap:10px;">
+        <button class="btn btn-red" onclick="fecharModal('modal_edit_paciente')">Fechar</button>
+        <button class="btn" onclick="salvarEdicaoPaciente()">
+            Salvar
+        </button>
+        </div>
+    </div>
+    </div>
+
+    <div id="modal_retirada" class="modal-overlay">
+        <div class="modal-content large-modal">
+            <h3><i class="fas fa-clipboard-check"></i> Confirmar Retirada</h3>
+            <p id="retirada_paciente_nome" style="color:var(--primary); font-weight:bold; margin-bottom:15px;"></p>
+            <input type="hidden" id="retirada_paciente_id">
+
+            <div class="alert-box">
+                <i class="fas fa-info-circle"></i> Verifique o estoque e ajuste a quantidade entregue caso não haja o suficiente.
+            </div>
+
+            <table class="table-retirada">
+                <thead>
+                    <tr>
+                        <th>Medicamento</th>
+                        <th>Estoque</th>
+                        <th>Prescrito</th>
+                        <th width="100">Entregar</th>
+                    </tr>
+                </thead>
+                <tbody id="retirada_tbody"></tbody>
+            </table>
+
+            <div style="display:flex; gap:10px; margin-top: 20px; justify-content: flex-end;">
+                <button class="btn btn-red" onclick="fecharModal('modal_retirada')">Cancelar</button>
+                <button class="btn" onclick="salvarRetirada()">CONFIRMAR SAÍDA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal_med" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="med_modal_title">Medicamento</h3>
+            <input type="hidden" id="edit_med_id">
+            <label class="field-label">Nome</label>
+            <input type="text" id="m_nome" oninput="this.value = this.value.toUpperCase()">
+            <div class="input-group" style="margin-top:10px;">
+                <select id="m_tipo"><option value="PÍLULA">PÍLULA</option><option value="LÍQUIDO">LÍQUIDO</option><option value="GEL">GEL</option><option value="FRALDA">FRALDA</option></select>
+                <input type="text" id="m_dosagem" placeholder="Ex: 500mg">
+            </div>
+            <div class="input-group">
+                <input type="number" id="m_qtd" placeholder="Qtd">
+                <input type="number" id="m_min" placeholder="Mínimo">
+            </div>
+            <input type="text" id="m_img_url" placeholder="URL da Imagem">
+            <div style="display:flex; gap:10px; margin-top: 15px;">
+                <button class="btn" style="flex:1" onclick="salvarMed()">Salvar</button>
+                <button class="btn btn-red" style="flex:1" onclick="fecharModal('modal_med')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal_add_med_patient" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Adicionar à Receita</h3>
+            <input type="hidden" id="target_patient_id">
+            <input type="text" id="add_med_search" placeholder="🔍 Filtrar..." onkeyup="renderAddMedGrid()" style="margin-bottom:10px;">
+            <div id="add_med_grid" class="mini-grid"></div>
+            <button class="btn btn-red" style="width:100%; margin-top:15px;" onclick="fecharModal('modal_add_med_patient')">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modal_detalhes_historico" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 id="detalhe_titulo">Dossiê do Paciente</h2>
+            <hr>
+            <div id="detalhe_info_pessoal" style="margin: 15px 0; line-height: 1.6;"></div>
+            <h4>Histórico de Retiradas</h4>
+            <div id="detalhe_lista_historico" style="max-height: 300px; overflow-y: auto; background: var(--bg-body); padding: 10px; border-radius: 8px;"></div>
+            
+            <button class="btn btn-red" style="width:100%; margin-top:15px;" onclick="fecharModal('modal_detalhes_historico')">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modal_resolver_pendencia" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+            <h3>Resolvendo Pendência</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">
+                Registrando entrega de itens faltantes. A data do registro será atualizada para hoje.
+            </p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Remédio</th>
+                        <th>Falta</th>
+                        <th>Entregar Agora</th>
+                    </tr>
+                </thead>
+                <tbody id="resolver_tbody"></tbody>
+            </table>
+            <div style="display:flex; gap:10px; margin-top: 15px;">
+                <button class="btn" style="flex:1" onclick="salvarResolucaoPendencia()">Confirmar Entrega</button>
+                <button class="btn btn-red" style="flex:1" onclick="fecharModal('modal_resolver_pendencia')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>
