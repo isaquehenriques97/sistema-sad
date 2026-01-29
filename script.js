@@ -791,4 +791,71 @@ async function excluirHistoricoGeral(pId) {
     } catch (err) {
         alert("Erro ao limpar histórico: " + err.message);
     }
+
+}
+
+// Verifica se o usuário já está logado ao carregar a página
+window.addEventListener('load', async () => {
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    // Verifica se veio de um link de e-mail (recuperação ou convite)
+    const hash = window.location.hash;
+    if (hash && hash.includes("type=recovery") || hash.includes("type=invite") || hash.includes("access_token")) {
+        configurarTelaNovaSenha();
+    } else if (session) {
+        mostrarApp();
+    }
+});
+
+async function handleAuth() {
+    const email = document.getElementById('auth-email').value;
+    const passwordField = document.getElementById('auth-password');
+    const msg = document.getElementById('auth-msg');
+
+    // Se o campo de senha está escondido, primeiro verificamos o e-mail
+    if (passwordField.classList.contains('hide')) {
+        // Aqui apenas mostramos o campo de senha para quem já tem conta
+        passwordField.classList.remove('hide');
+        document.getElementById('auth-subtitle').innerText = "Digite sua senha";
+        return;
+    }
+
+    const password = passwordField.value;
+    
+    // Tenta fazer login
+    const { error } = await _supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        msg.innerText = "Erro: " + error.message;
+    } else {
+        mostrarApp();
+    }
+}
+
+// Para quem clicou no e-mail para criar a senha
+function configurarTelaNovaSenha() {
+    document.getElementById('auth-title').innerText = "Criar Nova Senha";
+    document.getElementById('auth-subtitle').innerText = "Defina sua senha de acesso";
+    document.getElementById('auth-email').classList.add('hide');
+    document.getElementById('auth-password').classList.remove('hide');
+    const btn = document.getElementById('auth-btn-primary');
+    btn.innerText = "Salvar Senha";
+    btn.onclick = async () => {
+        const newPassword = document.getElementById('auth-password').value;
+        const { error } = await _supabase.auth.updateUser({ password: newPassword });
+        if (error) alert(error.message);
+        else mostrarApp();
+    };
+}
+
+function mostrarApp() {
+    document.getElementById('auth-container').classList.add('hide');
+    document.getElementById('app-content').classList.remove('hide');
+    // Inicie suas funções de renderização aqui
+    carregarDadosDoBanco();
+}
+
+async function logout() {
+    await _supabase.auth.signOut();
+    window.location.reload();
 }
