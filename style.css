@@ -358,11 +358,16 @@ input:focus { border-color: var(--primary); }
 }
 
 #auth-container {
+    position: fixed; /* Fixa na tela toda */
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--bg-body);
+    z-index: 9999; /* Fica acima de qualquer outro elemento */
 }
 
 .login-card {
@@ -390,3 +395,4 @@ input:focus { border-color: var(--primary); }
 .modal-content.large-modal { max-width: 600px; }
 
 .theme-toggle { position: fixed; bottom: 20px; left: 20px; width: 40px; height: 40px; border-radius: 50%; background: var(--text); color: var(--bg-body); border: none; cursor: pointer; z-index: 100; display: grid; place-items: center; }
+
