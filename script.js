@@ -897,3 +897,13 @@ async function excluirHistoricoGeral(pId) {
 
 }
 
+async function logout() {
+    try {
+        await _supabase.auth.signOut();
+        // Recarrega a página para voltar à tela de login limpa
+        window.location.href = "/"; 
+    } catch (error) {
+        console.error("Erro ao sair:", error);
+        window.location.reload();
+    }
+}
