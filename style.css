@@ -390,9 +390,38 @@ input:focus { border-color: var(--primary); }
 
 .hide { display: none !important; }
 
+.btn-logout {
+    background: transparent;
+    color: var(--danger); /* Ou use #ff4d4d se não tiver a var */
+    border: 1px solid var(--danger);
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-logout:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Garante que o painel esquerdo ocupe a altura toda para o botão ir pro fundo */
+.panel-left {
+    display: flex;
+    flex-direction: column; 
+    /* Se seu panel-left já tiver estilos, apenas adicione display:flex e flex-direction:column */
+}
+
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
 .modal-content { background: var(--bg-panel); padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 .modal-content.large-modal { max-width: 600px; }
 
 .theme-toggle { position: fixed; bottom: 20px; left: 20px; width: 40px; height: 40px; border-radius: 50%; background: var(--text); color: var(--bg-body); border: none; cursor: pointer; z-index: 100; display: grid; place-items: center; }
+
 
