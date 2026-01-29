@@ -252,7 +252,12 @@
             <label class="field-label">Nome</label>
             <input type="text" id="m_nome" oninput="this.value = this.value.toUpperCase()">
             <div class="input-group" style="margin-top:10px;">
-                <select id="m_tipo"><option value="PÍLULA">PÍLULA</option><option value="LÍQUIDO">LÍQUIDO</option><option value="GEL">GEL</option><option value="FRALDA">FRALDA</option></select>
+                <select id="m_tipo">
+                    <option value="COMPRIMIDO">COMPRIMIDO</option>
+                        <option value="LÍQUIDO">LÍQUIDO</option>
+                        <option value="GEL">Gel</option>
+                        <option value="FRALDA">FRALDA</option>
+                        <option value="MEIA">MEIA</option></select>
                 <input type="text" id="m_dosagem" placeholder="Ex: 500mg">
             </div>
             <div class="input-group">
@@ -317,6 +322,7 @@
 </body>
 
 </html>
+
 
 
 
