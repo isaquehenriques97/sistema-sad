@@ -16,22 +16,26 @@ let retiradaTempData = null;
 /* ================= LOGIN ================= */
 // Verifica se o usuário já está logado ao carregar a página
 window.addEventListener('load', async () => {
-    // 1. Verifica se existe sessão ativa (Login normal)
-    const { data: { session } } = await _supabase.auth.getSession();
-
-    // 2. Verifica se a URL tem o hash de recuperação/convite (Vindo do E-mail)
+    // 1. Pega o "resto" da URL que vem depois do #
     const hash = window.location.hash;
 
-    // Se tiver "type=invite" ou "type=recovery" na URL, mostra tela de criar senha
-    if (hash && (hash.includes("type=invite") || hash.includes("type=recovery"))) {
-        console.log("Link de convite detectado!");
-        configurarTelaNovaSenha(); 
-    } 
-    // Se não for convite, mas tiver sessão, entra no app
-    else if (session) {
+    // 2. Verifica se a URL indica que é um CONVITE ou RECUPERAÇÃO DE SENHA
+    // O Supabase coloca "type=invite" ou "type=recovery" na URL nesses casos
+    const isFirstAccess = hash && (hash.includes("type=invite") || hash.includes("type=recovery"));
+
+    // 3. Verifica se existe uma sessão válida
+    const { data: { session } } = await _supabase.auth.getSession();
+
+    if (isFirstAccess) {
+        console.log("Detectado fluxo de definição de senha.");
+        // SE FOR PRIMEIRO ACESSO: Ignora que já está logado e FORÇA a troca de senha
+        configurarTelaNovaSenha();
+    } else if (session) {
+        console.log("Usuário já logado. Entrando...");
+        // SE FOR LOGIN NORMAL: Entra direto
         mostrarApp();
-    }
-    // Se não tiver nada, o usuário vê a tela de login normal (que já está no HTML)
+    } 
+    // Se não tiver nada, ele fica parado na tela de login (comportamento padrão)
 });
 
 async function handleAuth() {
@@ -892,3 +896,4 @@ async function excluirHistoricoGeral(pId) {
     }
 
 }
+
