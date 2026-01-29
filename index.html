@@ -9,6 +9,22 @@
 </head>
 <body>
 
+    <div id="auth-container">
+    <div class="login-card">
+        <h2 id="auth-title">S.A.D.</h2>
+        <p id="auth-subtitle">Entre com suas credenciais</p>
+        
+        <input type="email" id="auth-email" placeholder="Seu e-mail">
+        <input type="password" id="auth-password" placeholder="Sua senha" class="hide">
+        
+        <button id="auth-btn-primary" class="btn" onclick="handleAuth()">Continuar</button>
+        <p id="auth-msg" style="font-size: 12px; margin-top: 10px; color: var(--danger);"></p>
+    </div>
+</div>
+
+<div id="app-content" class="hide">
+   </div>
+    
     <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
 
     <div class="panel-left">
@@ -276,4 +292,5 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
