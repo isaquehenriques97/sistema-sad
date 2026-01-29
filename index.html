@@ -10,17 +10,34 @@
 <body>
 
     <div id="auth-container">
-    <div class="login-card">
-        <h2 id="auth-title">S.A.D.</h2>
-        <p id="auth-subtitle">Entre com suas credenciais</p>
-        
-        <input type="email" id="auth-email" placeholder="Seu e-mail">
-        <input type="password" id="auth-password" placeholder="Sua senha" class="hide">
-        
-        <button id="auth-btn-primary" class="btn" onclick="handleAuth()">Continuar</button>
-        <p id="auth-msg" style="font-size: 12px; margin-top: 10px; color: var(--danger);"></p>
+    
+        <div id="card-login" class="login-card">
+            <h2 style="color:var(--primary); margin-bottom:5px;">S.A.D.</h2>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Entre com suas credenciais</p>
+            
+            <input type="email" id="auth-email" placeholder="Seu e-mail">
+            <input type="password" id="auth-password" placeholder="Sua senha">
+            
+            <button class="btn" style="width:100%; margin-top:10px;" onclick="handleLogin()">ENTRAR</button>
+            <p id="auth-msg" style="font-size: 12px; margin-top: 10px; color: var(--danger);"></p>
+        </div>
+    
+        <div id="card-new-password" class="login-card hide">
+            <h2 style="color:var(--primary); margin-bottom:5px;">Bem-vindo!</h2>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:20px;">Defina sua senha de acesso</p>
+    
+            <div style="background: #eef2ff; padding: 10px; border-radius: 5px; font-size: 11px; margin-bottom: 10px; color: var(--primary);">
+                <i class="fas fa-info-circle"></i> Você acessou via convite. Crie uma senha para os próximos acessos.
+            </div>
+            
+            <input type="password" id="new-password-input" placeholder="Nova Senha (mín. 6 dígitos)">
+            
+            <button class="btn" style="width:100%; margin-top:10px;" onclick="salvarNovaSenha()">
+                SALVAR E ENTRAR
+            </button>
+        </div>
+    
     </div>
-</div>
 
 <div id="app-content" class="hide">
    </div>
@@ -299,6 +316,7 @@
 </body>
 
 </html>
+
 
 
 
