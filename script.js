@@ -13,49 +13,44 @@ let protocoloSelection = {};
 let targetPatientId = null;
 let retiradaTempData = null;
 
-/* ================= LOGIN ================= */
-// Verifica se o usuário já está logado ao carregar a página
+/* ================= CONFIGURAÇÃO DE LOGIN ================= */
+
 window.addEventListener('load', async () => {
-    // 1. Pega o "resto" da URL que vem depois do #
+    // 1. Verifica se a URL tem indicativo de convite ou recuperação (#access_token ou type=invite)
     const hash = window.location.hash;
+    const isInvite = hash && (hash.includes("type=invite") || hash.includes("type=recovery") || hash.includes("access_token"));
 
-    // 2. Verifica se a URL indica que é um CONVITE ou RECUPERAÇÃO DE SENHA
-    // O Supabase coloca "type=invite" ou "type=recovery" na URL nesses casos
-    const isFirstAccess = hash && (hash.includes("type=invite") || hash.includes("type=recovery"));
-
-    // 3. Verifica se existe uma sessão válida
+    // 2. Verifica sessão existente
     const { data: { session } } = await _supabase.auth.getSession();
 
-    if (isFirstAccess) {
-        console.log("Detectado fluxo de definição de senha.");
-        // SE FOR PRIMEIRO ACESSO: Ignora que já está logado e FORÇA a troca de senha
-        configurarTelaNovaSenha();
+    if (isInvite) {
+        // Se veio do email: Mostra a tela de CRIAR SENHA
+        mostrarTelaCriarSenha();
     } else if (session) {
-        console.log("Usuário já logado. Entrando...");
-        // SE FOR LOGIN NORMAL: Entra direto
+        // Se já tem sessão: Entra no sistema
         mostrarApp();
-    } 
-    // Se não tiver nada, ele fica parado na tela de login (comportamento padrão)
+    }
+    // Se não, fica na tela de Login (padrão do HTML)
 });
 
-async function handleAuth() {
+// Alterna para o cartão de "Nova Senha"
+function mostrarTelaCriarSenha() {
+    document.getElementById('card-login').classList.add('hide');       // Esconde login
+    document.getElementById('card-new-password').classList.remove('hide'); // Mostra criar senha
+}
+
+// Ação do botão "Entrar" (Login normal)
+async function handleLogin() {
     const email = document.getElementById('auth-email').value;
-    const passwordField = document.getElementById('auth-password');
+    const password = document.getElementById('auth-password').value;
     const msg = document.getElementById('auth-msg');
 
-    // Se o campo de senha está escondido, primeiro verificamos o e-mail
-    if (passwordField.classList.contains('hide')) {
-        // Aqui apenas mostramos o campo de senha para quem já tem conta
-        passwordField.classList.remove('hide');
-        document.getElementById('auth-subtitle').innerText = "Digite sua senha";
+    if (!email || !password) {
+        msg.innerText = "Preencha e-mail e senha.";
         return;
     }
 
-    const password = passwordField.value;
-    
-    // Tenta fazer login
     const { error } = await _supabase.auth.signInWithPassword({ email, password });
-
     if (error) {
         msg.innerText = "Erro: " + error.message;
     } else {
@@ -63,58 +58,44 @@ async function handleAuth() {
     }
 }
 
-// Para quem clicou no e-mail para criar a senha
-function configurarTelaNovaSenha() {
-    // Esconde o login normal e adapta para "Criar Senha"
-    document.getElementById('auth-container').classList.remove('hide');
-    document.getElementById('app-content').classList.add('hide'); // Garante que o app tá escondido
+// Ação do botão "Salvar e Entrar" (Vindo do E-mail)
+async function salvarNovaSenha() {
+    const newPassword = document.getElementById('new-password-input').value;
+    
+    if (newPassword.length < 6) {
+        alert("A senha deve ter pelo menos 6 caracteres.");
+        return;
+    }
 
-    document.getElementById('auth-title').innerText = "Bem-vindo ao S.A.D.";
-    document.getElementById('auth-subtitle').innerText = "Crie sua senha de acesso";
-    
-    // Esconde campo de e-mail (já sabemos quem é)
-    document.getElementById('auth-email').classList.add('hide');
-    
-    // Mostra campo de senha
-    const passInput = document.getElementById('auth-password');
-    passInput.classList.remove('hide');
-    passInput.placeholder = "Nova Senha";
-    
-    const btn = document.querySelector('#auth-container .btn');
-    btn.innerText = "Salvar e Entrar";
-    
-    // Muda a ação do botão para ATUALIZAR a senha
-    btn.onclick = async () => {
-        const newPassword = passInput.value;
-        if(newPassword.length < 6) {
-            alert("A senha precisa ter pelo menos 6 caracteres.");
-            return;
-        }
+    // Atualiza o usuário no Supabase
+    const { error } = await _supabase.auth.updateUser({ password: newPassword });
 
-        const { data, error } = await _supabase.auth.updateUser({ password: newPassword });
-        
-        if (error) {
-            alert("Erro: " + error.message);
-        } else {
-            alert("Senha cadastrada com sucesso!");
-            mostrarApp(); // Entra no sistema
-            // Limpa a URL para não ficar suja
-            window.history.replaceState(null, null, window.location.pathname);
-        }
-    };
+    if (error) {
+        alert("Erro ao salvar senha: " + error.message);
+    } else {
+        alert("Senha cadastrada com sucesso!");
+        mostrarApp();
+        // Limpa a URL para remover o token
+        window.history.replaceState(null, null, window.location.pathname);
+    }
 }
 
+// Libera o acesso ao sistema
 function mostrarApp() {
-    document.getElementById('auth-container').classList.add('hide');
-    document.getElementById('app-content').classList.remove('hide');
-    // Inicie suas funções de renderização aqui
-    carregarDadosDoBanco();
+    document.getElementById('auth-container').classList.add('hide'); // Some com toda a tela de auth
+    document.getElementById('app-content').classList.remove('hide'); // Aparece o sistema
+    
+    // Carrega seus dados
+    renderDashboard();
+    renderPacientes();
 }
 
 async function logout() {
     await _supabase.auth.signOut();
-    window.location.reload();
+    window.location.href = "/"; // Recarrega para tela de login
 }
+
+/* ================= FIM DO LOGIN ================= */
 
 /* ================= INICIALIZAÇÃO ================= */
 window.onload = async () => {
@@ -907,3 +888,4 @@ async function logout() {
         window.location.reload();
     }
 }
+
