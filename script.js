@@ -222,6 +222,11 @@ function renderPacientes() {
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
                     <small style="color:var(--text-muted)">Última: <b>${p.ultimaRetirada || '-'}</b></small>
+                    <button class="btn-sm" style="border:none; background:transparent; color:var(--primary); cursor:pointer;" 
+                                onclick="abrirModalAjusteData(${p.id}, '${p.ultimaRetirada || ''}')" title="Alterar Data Manualmente">
+                            <i class="fas fa-calendar-alt"></i>
+                        </button>
+                    
                     <button class="btn btn-sm" onclick="abrirModalRetirada(${p.id})">
                         <i class="fas fa-check-circle"></i> RETIRADA
                     </button>
@@ -551,3 +556,4 @@ async function excluirHistoricoGeral(pId) {
         fecharModal('modal_detalhes_historico'); 
     } catch (err) { alert("Erro: " + err.message); }
 }
+
