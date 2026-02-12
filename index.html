@@ -191,6 +191,12 @@
             <h3><i class="fas fa-clipboard-check"></i> Confirmar Retirada</h3>
             <p id="retirada_paciente_nome" style="color:var(--primary); font-weight:bold; margin-bottom:15px;"></p>
             <input type="hidden" id="retirada_paciente_id">
+
+            <div style="margin-bottom: 15px; text-align: right;">
+                <label style="font-size: 12px; color: var(--text-muted);">Data da Retirada:</label>
+                <input type="date" id="retirada_data_custom" style="padding: 5px; border: 1px solid var(--border); border-radius: 4px;">
+            </div>
+            
             <table class="table-retirada">
                 <thead><tr><th>Medicamento</th><th>Prescrito</th><th width="100">Entregar Hoje</th></tr></thead>
                 <tbody id="retirada_tbody"></tbody>
@@ -267,7 +273,23 @@
         </div>
     </div>
 
+    <div id="modal_ajuste_data" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <h3>Alterar Data da Última Retirada</h3>
+            <input type="hidden" id="ajuste_data_paciente_id">
+            
+            <label class="field-label">Nova Data:</label>
+            <input type="date" id="ajuste_data_input" style="width: 100%; padding: 8px; margin-bottom: 15px;">
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="flex:1" onclick="salvarAjusteData()">Salvar</button>
+                <button class="btn btn-red" style="flex:1" onclick="fecharModal('modal_ajuste_data')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
+
