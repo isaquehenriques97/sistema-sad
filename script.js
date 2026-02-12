@@ -255,6 +255,11 @@ function abrirModalRetirada(id) {
 
     retiradaTempData = { pacienteId: id, itens: [] };
     document.getElementById('retirada_paciente_nome').innerText = p.nome;
+
+    // DEFINE A DATA DE HOJE COMO PADRÃO
+    const hojeISO = new Date().toISOString().split('T')[0];
+    document.getElementById('retirada_data_custom').value = hojeISO;
+    
     const tbody = document.getElementById('retirada_tbody');
     tbody.innerHTML = '';
 
@@ -280,10 +285,16 @@ async function salvarRetirada() {
     const pId = retiradaTempData.pacienteId;
     const p = db.pacientes.find(x => x.id === pId);
     
+    // PEGA A DATA ESCOLHIDA PELO USUÁRIO
+    const dataInput = document.getElementById('retirada_data_custom').value;
+    if(!dataInput) return alert("Por favor, selecione uma data.");
+
+    // Formata para exibição PT-BR (DD/MM/AAAA) para salvar na tabela pacientes
+    const dataPartes = dataInput.split('-');
+    const dataDisplay = `${dataPartes[2]}/${dataPartes[1]}/${dataPartes[0]}`;
+
     let houvePendencia = false;
     let itensHistorico = [];
-    const dataHoje = new Date().toISOString().split('T')[0];
-    const dataDisplay = new Date().toLocaleDateString('pt-BR');
 
     for (let item of retiradaTempData.itens) {
         const inputVal = parseInt(document.getElementById(`qtd_entrega_${item.medId}`).value) || 0;
@@ -311,14 +322,14 @@ async function salvarRetirada() {
         await _supabase.from('historico').insert([{
             paciente_id: pId,
             paciente_nome: p.nome,
-            data: dataHoje,
+            data: dataInput, // Salva no formato YYYY-MM-DD para ordenação correta no histórico
             pendencia_geral: houvePendencia,
             itens: itensHistorico 
         }]);
 
         await carregarDadosDoBanco();
         fecharModal('modal_retirada');
-        alert("Retirada registrada!");
+        alert("Retirada registrada na data: " + dataDisplay);
     } catch (err) {
         alert("Erro na retirada: " + err.message);
     }
@@ -555,5 +566,51 @@ async function excluirHistoricoGeral(pId) {
         await carregarDadosDoBanco();
         fecharModal('modal_detalhes_historico'); 
     } catch (err) { alert("Erro: " + err.message); }
+}
+
+/* ================= AJUSTE MANUAL DE DATA ================= */
+function abrirModalAjusteData(pId, dataAtualString) {
+    document.getElementById('ajuste_data_paciente_id').value = pId;
+    const inputDate = document.getElementById('ajuste_data_input');
+    
+    // Tenta converter DD/MM/AAAA para YYYY-MM-DD para o input aceitar
+    if(dataAtualString && dataAtualString.includes('/')) {
+        const partes = dataAtualString.split('/');
+        if(partes.length === 3) {
+            // Assume DD/MM/AAAA -> YYYY-MM-DD
+            inputDate.value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+    } else {
+        // Se não tiver data, coloca hoje
+        inputDate.value = new Date().toISOString().split('T')[0];
+    }
+    
+    document.getElementById('modal_ajuste_data').style.display = 'flex';
+}
+
+async function salvarAjusteData() {
+    const pId = document.getElementById('ajuste_data_paciente_id').value;
+    const novaDataIso = document.getElementById('ajuste_data_input').value;
+    
+    if(!novaDataIso) return alert("Selecione uma data válida.");
+
+    // Converte YYYY-MM-DD para DD/MM/AAAA
+    const p = novaDataIso.split('-');
+    const novaDataDisplay = `${p[2]}/${p[1]}/${p[0]}`;
+
+    try {
+        const { error } = await _supabase
+            .from('pacientes')
+            .update({ ultima_retirada: novaDataDisplay })
+            .eq('id', pId);
+
+        if(error) throw error;
+
+        await carregarDadosDoBanco();
+        fecharModal('modal_ajuste_data');
+        alert("Data atualizada com sucesso!");
+    } catch (err) {
+        alert("Erro ao atualizar data: " + err.message);
+    }
 }
 
